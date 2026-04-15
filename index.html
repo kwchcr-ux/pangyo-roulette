@@ -1,0 +1,749 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PS TF 저녁회식</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Jua&display=swap');
+
+  * { margin: 0; padding: 0; box-sizing: border-box; cursor: crosshair; }
+
+  body {
+    font-family: 'Jua', 'Comic Sans MS', 'Chalkboard SE', cursive;
+    background: #c0c0c0;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    overflow-x: hidden;
+    image-rendering: pixelated;
+  }
+
+  /* === 윈도우 타이틀바 === */
+  .window {
+    margin-top: 20px;
+    border: 3px solid #000;
+    background: #fff;
+    box-shadow: 5px 5px 0px #000;
+    max-width: 700px;
+    width: 95%;
+  }
+
+  .title-bar {
+    background: linear-gradient(90deg, #000080, #1084d0);
+    color: white;
+    padding: 4px 8px;
+    font-size: 14px;
+    font-weight: bold;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-family: 'Tahoma', sans-serif;
+  }
+
+  .title-bar-buttons {
+    display: flex;
+    gap: 2px;
+  }
+
+  .title-bar-buttons span {
+    display: inline-block;
+    width: 16px;
+    height: 14px;
+    background: #c0c0c0;
+    border: 1px outset #fff;
+    text-align: center;
+    font-size: 10px;
+    line-height: 13px;
+    cursor: pointer;
+    font-family: 'Tahoma', sans-serif;
+  }
+
+  .window-body {
+    padding: 15px;
+    background: #fff;
+  }
+
+  /* === 메인 제목 === */
+  h1 {
+    font-size: 2.8rem;
+    color: #ff0000;
+    text-shadow: 3px 3px 0px #ffff00, -2px -2px 0px #0000ff;
+    text-align: center;
+    margin-bottom: 4px;
+    letter-spacing: -2px;
+    transform: rotate(-2deg);
+  }
+
+  .subtitle {
+    font-size: 1.3rem;
+    color: #ff00ff;
+    text-align: center;
+    margin-bottom: 15px;
+    font-style: italic;
+    text-shadow: 1px 1px 0px #00ff00;
+    transform: rotate(1deg);
+  }
+
+  /* === 마키 텍스트 === */
+  .marquee-container {
+    background: #000;
+    color: #00ff00;
+    padding: 4px 0;
+    font-size: 13px;
+    overflow: hidden;
+    white-space: nowrap;
+    border: 2px inset #808080;
+    margin-bottom: 12px;
+  }
+
+  .marquee-text {
+    display: inline-block;
+    animation: marquee 20s linear infinite;
+  }
+
+  @keyframes marquee {
+    from { transform: translateX(100%); }
+    to { transform: translateX(-100%); }
+  }
+
+  /* === 룰렛 영역 === */
+  .wheel-container {
+    position: relative;
+    width: 400px;
+    height: 400px;
+    margin: 0 auto 15px;
+  }
+
+  canvas {
+    border-radius: 50%;
+    border: 6px dashed #ff0000;
+    image-rendering: pixelated;
+  }
+
+  .pointer {
+    position: absolute;
+    top: -22px;
+    left: 50%;
+    transform: translateX(-50%);
+    font-size: 40px;
+    z-index: 10;
+    filter: drop-shadow(2px 2px 0px #000);
+    line-height: 1;
+  }
+
+  .center-circle {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 70px;
+    height: 70px;
+    background: #ffff00;
+    border: 4px solid #000;
+    border-radius: 50%;
+    z-index: 5;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.8rem;
+  }
+
+  /* === Win95 버튼 === */
+  #spinBtn {
+    padding: 12px 50px;
+    font-size: 1.6rem;
+    font-family: 'Jua', 'Comic Sans MS', cursive;
+    font-weight: bold;
+    border: 3px outset #fff;
+    background: #c0c0c0;
+    color: #000;
+    cursor: pointer;
+    display: block;
+    margin: 0 auto;
+    text-shadow: none;
+    box-shadow: 2px 2px 0px #000;
+    letter-spacing: 3px;
+  }
+
+  #spinBtn:active {
+    border-style: inset;
+    box-shadow: none;
+    transform: translate(2px, 2px);
+  }
+
+  #spinBtn:disabled {
+    color: #808080;
+  }
+
+  #spinBtn:hover:not(:disabled) {
+    background: #d4d4d4;
+  }
+
+  /* === 결과 박스 === */
+  .result-box {
+    margin: 15px auto 10px;
+    padding: 15px 30px;
+    background: #ffff00;
+    border: 4px solid #ff0000;
+    text-align: center;
+    box-shadow: 4px 4px 0px #000;
+    min-height: 80px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    transform: rotate(0.5deg);
+  }
+
+  .result-box.active {
+    animation: blink-border 0.3s ease 3;
+  }
+
+  @keyframes blink-border {
+    0%, 100% { border-color: #ff0000; background: #ffff00; }
+    50% { border-color: #0000ff; background: #00ff00; }
+  }
+
+  .result-name {
+    font-size: 2.4rem;
+    font-weight: bold;
+    color: #ff0000;
+    text-shadow: 2px 2px 0px #000;
+  }
+
+  .result-category {
+    font-size: 1.1rem;
+    color: #0000ff;
+    font-weight: bold;
+  }
+
+  /* === 히스토리 === */
+  .history {
+    margin: 10px auto;
+    font-size: 0.85rem;
+    max-width: 600px;
+    text-align: center;
+    color: #000;
+  }
+
+  .history span {
+    display: inline-block;
+    padding: 2px 8px;
+    margin: 2px;
+    background: #c0c0c0;
+    border: 2px outset #fff;
+    font-size: 12px;
+    font-family: 'Tahoma', sans-serif;
+  }
+
+  /* === 카운터 === */
+  .count-badge {
+    font-size: 0.9rem;
+    color: #000080;
+    margin-bottom: 8px;
+    text-align: center;
+    font-family: 'Tahoma', sans-serif;
+  }
+
+  /* === 못그린 클립아트들 === */
+  .doodle {
+    position: absolute;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  /* === 하단 서명 === */
+  .footer {
+    margin: 10px auto 20px;
+    font-size: 11px;
+    color: #808080;
+    text-align: center;
+    font-family: 'Tahoma', sans-serif;
+  }
+
+  .footer a { color: #0000ff; }
+
+  /* === 워드아트 효과 === */
+  .wordart {
+    background: linear-gradient(180deg, #ff0000 0%, #ff8800 25%, #ffff00 50%, #00ff00 75%, #0000ff 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    font-size: 1rem;
+    font-weight: bold;
+    text-align: center;
+    margin-bottom: 8px;
+    transform: scaleY(1.3);
+  }
+
+  /* === 깜빡이는 별 === */
+  .blink-star {
+    animation: blink 0.8s step-end infinite;
+    font-size: 1.2rem;
+  }
+
+  @keyframes blink {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0; }
+  }
+
+  /* === 상태바 === */
+  .status-bar {
+    background: #c0c0c0;
+    border-top: 1px solid #808080;
+    padding: 3px 8px;
+    font-size: 11px;
+    font-family: 'Tahoma', sans-serif;
+    color: #000;
+    display: flex;
+    justify-content: space-between;
+  }
+
+  .status-bar div {
+    border: 1px inset #fff;
+    padding: 1px 6px;
+  }
+
+  /* visitor counter */
+  .visitor-counter {
+    margin: 5px auto;
+    text-align: center;
+  }
+
+  .visitor-counter img {
+    image-rendering: pixelated;
+  }
+
+  .counter-box {
+    display: inline-block;
+    background: #000;
+    color: #00ff00;
+    font-family: 'Courier New', monospace;
+    font-size: 16px;
+    font-weight: bold;
+    padding: 2px 8px;
+    border: 2px inset #808080;
+    letter-spacing: 3px;
+  }
+
+  .rainbow-text {
+    animation: rainbow 2s linear infinite;
+  }
+
+  @keyframes rainbow {
+    0% { color: #ff0000; }
+    16% { color: #ff8800; }
+    33% { color: #ffff00; }
+    50% { color: #00ff00; }
+    66% { color: #0000ff; }
+    83% { color: #8800ff; }
+    100% { color: #ff0000; }
+  }
+
+  .under-construction {
+    font-size: 12px;
+    color: #ff0000;
+    text-align: center;
+    font-weight: bold;
+    margin: 5px 0;
+    font-family: 'Comic Sans MS', cursive;
+  }
+
+  .sparkle {
+    animation: sparkle 1.5s ease-in-out infinite;
+  }
+
+  @keyframes sparkle {
+    0%, 100% { opacity: 1; transform: scale(1); }
+    50% { opacity: 0.5; transform: scale(1.3); }
+  }
+</style>
+</head>
+<body>
+
+<div class="window">
+  <div class="title-bar">
+    <span>PS_TF_저녁회식_룰렛.exe</span>
+    <div class="title-bar-buttons">
+      <span>_</span>
+      <span>□</span>
+      <span>X</span>
+    </div>
+  </div>
+  <div class="window-body">
+
+    <h1>PS TF 저녁회식</h1>
+    <p class="subtitle">
+      <span class="blink-star">★</span>
+      룰렛이 정해 드릴게요
+      <span class="blink-star">★</span>
+    </p>
+
+    <div class="wordart">~ 판교 유스페이스 / H스퀘어 / 엔바이콘 / 삼환하이펙스 ~</div>
+
+    <div class="marquee-container">
+      <span class="marquee-text">
+        ★★★ 오늘 저녁 뭐 먹을지 고민하지 마세요!! 룰렛이 알아서 정해드립니다!! 이의제기 불가!! ★★★ 돌리면 무조건 그 식당 갑니다 ★★★ NO 컴플레인 ★★★
+      </span>
+    </div>
+
+    <p class="count-badge">등록된 식당: <strong id="countDisplay">0</strong>개 (판교테크노밸리 일대)</p>
+
+    <div class="wheel-container">
+      <div class="pointer" id="pointer">▼</div>
+      <canvas id="wheel" width="400" height="400"></canvas>
+      <div class="center-circle">🍖</div>
+    </div>
+
+    <button id="spinBtn" onclick="spin()">▶ 돌 려 ! ◀</button>
+
+    <div class="result-box" id="resultBox">
+      <div class="result-name" id="resultName">버튼 누르세요!!</div>
+      <div class="result-category" id="resultCategory"></div>
+    </div>
+
+    <div class="history" id="history"></div>
+
+    <div class="under-construction">
+      🚧 UNDER CONSTRUCTION 🚧
+    </div>
+
+    <div class="visitor-counter">
+      <span style="font-size:11px; font-family: 'Tahoma',sans-serif;">방문자 수: </span>
+      <span class="counter-box" id="visitorCount">000000</span>
+    </div>
+
+  </div>
+
+  <div class="status-bar">
+    <div id="statusText">준비 완료</div>
+    <div id="statusTime"></div>
+  </div>
+</div>
+
+<p class="footer">
+  Powered by 그림판 & PS TF<br>
+  <span class="rainbow-text">Best viewed in Internet Explorer 6.0</span>
+</p>
+
+<script>
+const RESTAURANTS = [
+  // ===== 한식 =====
+  { name: "앞구정김치찌개", category: "김치찌개" },
+  { name: "북청집", category: "제육볶음" },
+  { name: "오봉집 유스페이스점", category: "닭볶음/보쌈" },
+  { name: "통닭녹지 판교", category: "닭볶음탕" },
+  { name: "뼛녹지한마당", category: "새조개샤브샤브" },
+  { name: "담소사골순대 판교점", category: "순대국" },
+  { name: "강북엄지네꼬막집", category: "꼬막무침" },
+  { name: "육회한김스지", category: "수육전골/육회" },
+  { name: "논산집", category: "한정식" },
+  { name: "군산오징어", category: "오징어불고기" },
+  { name: "벅박이찌개 판교점", category: "찌개" },
+  { name: "우림 닭갈비", category: "닭갈비" },
+  { name: "팔각도 유스페이스점", category: "닭갈비" },
+  { name: "평가옥", category: "평양냉면" },
+  { name: "봉피양", category: "평양냉면/닭갈비" },
+  { name: "해미옥 판교점", category: "해물칼국수" },
+  { name: "옥된장 판교점", category: "된장찌개" },
+  { name: "떡박이찌개 판교점", category: "김치찌개/라면" },
+  { name: "한와담", category: "한식 플레이트" },
+  { name: "여의나룻", category: "한우탕/육개장" },
+  { name: "토속상황삼계탕", category: "삼계탕" },
+  { name: "본가광양불고기", category: "광양불고기" },
+  { name: "손에손잡고", category: "한식주점" },
+  { name: "제주은희네해장국", category: "해장국" },
+  { name: "조마루감자탕 판교점", category: "감자탕" },
+  { name: "원조감자탕일미집", category: "감자탕/보쌈" },
+  { name: "춘업순댓국", category: "순대국" },
+
+  // ===== 고기 =====
+  { name: "황제갈비", category: "소고기/토시살" },
+  { name: "풍천숯불재벌장어", category: "장어구이" },
+  { name: "조재벌식당", category: "삼겹살" },
+  { name: "화포식당 판교점", category: "삼겹살/항정살" },
+  { name: "우몽블랙", category: "한우" },
+  { name: "숯불정원한우", category: "한우" },
+  { name: "기달임", category: "곱창" },
+  { name: "인생곱창", category: "소곱창" },
+  { name: "우나기강 판교점", category: "장어덮밥" },
+  { name: "사위식당", category: "낙곱새" },
+  { name: "통큰낙지", category: "낙지볶음" },
+  { name: "목포명가 판교점", category: "홍어/횟집" },
+
+  // ===== 일식 =====
+  { name: "하루", category: "소바/덴푸라" },
+  { name: "일상화식", category: "카이센동" },
+  { name: "이황식당", category: "돈코츠라멘" },
+  { name: "소바니우동", category: "우동/소바" },
+  { name: "스시가오", category: "스시/라멘" },
+  { name: "스시쿤", category: "오마카세" },
+  { name: "교소바", category: "소바" },
+  { name: "상록면", category: "일식" },
+  { name: "일려", category: "이자카야" },
+  { name: "단", category: "이자카야" },
+  { name: "카츠쇼쿠도우 판교본점", category: "돈카츠" },
+  { name: "서호돈가스", category: "돈가스" },
+  { name: "먼데이키친", category: "돈까스/연어덮밥" },
+  { name: "매콕돈가스 판교점", category: "돈까스" },
+  { name: "예술작품을빚다비즈", category: "돈까스" },
+  { name: "규카츠정 판교점", category: "규카츠/카레" },
+  { name: "해도룩", category: "연어덮밥/세꼬시" },
+
+  // ===== 중식 =====
+  { name: "팔복", category: "중식/동파육" },
+  { name: "중경별곡", category: "마라탕/마라샹궈" },
+  { name: "이가네양꼬치", category: "양꼬치/양갈비" },
+  { name: "보배반점 판교점", category: "짜장면" },
+  { name: "왕스덕", category: "베이징덕" },
+  { name: "라무진", category: "양갈비/양고기" },
+  { name: "소호반점", category: "중화요리" },
+  { name: "신라마라탕", category: "마라탕" },
+  { name: "락앤윱", category: "짜장면" },
+  { name: "동청담", category: "중식" },
+
+  // ===== 양식 =====
+  { name: "빈티지1988", category: "파스타/스테이크" },
+  { name: "데이빗앤돌스", category: "브런치/샐러드" },
+  { name: "바스버거 판교점", category: "수제버거" },
+  { name: "브루클린", category: "피자/맥주" },
+  { name: "리벨스앤버거", category: "수제버거" },
+  { name: "헤비스테이크 판교점", category: "스테이크" },
+  { name: "울프스덴", category: "파스타/스테이크" },
+  { name: "라디오베이", category: "파스타" },
+
+  // ===== 아시안 =====
+  { name: "홍호아 판교점", category: "베트남/반미" },
+  { name: "슈퍼타이 판교점", category: "태국음식" },
+  { name: "르메콩", category: "베트남 쌀국수" },
+  { name: "타이87", category: "태국음식" },
+  { name: "킨파", category: "연어/포케" },
+  { name: "마마스포", category: "태국음식" },
+  { name: "오한수 우육면가", category: "우육면" },
+
+  // ===== 분식/간편 =====
+  { name: "김밥만 유스페이스점", category: "김밥" },
+  { name: "디셋테이블", category: "키토김밥" },
+  { name: "김가네 H스퀘어점", category: "김밥" },
+  { name: "삼미칼국수", category: "칼국수" },
+  { name: "샐러드박스", category: "샐러드/포케" },
+  { name: "슬로우캐리 판교점", category: "샐러드/포케" },
+  { name: "프레퍼스 다이어트푸드", category: "샐러드" },
+  { name: "하나샤브샤브", category: "샤브샤브" },
+
+  // ===== 술집/바 =====
+  { name: "아침산저녁바다", category: "술집" },
+  { name: "을지로왕노가리", category: "맥주/노가리" },
+  { name: "해질녘", category: "요리주점" },
+  { name: "더 탑하우스", category: "수제맥주" },
+  { name: "기네1759", category: "탭하우스" },
+  { name: "글램라운지", category: "바" },
+  { name: "전설의골뱅이", category: "포차" },
+  { name: "구우트", category: "와인바" },
+  { name: "울프스디너", category: "와인바" },
+  { name: "MS생감자치킨", category: "치맥" },
+  { name: "까사론나", category: "와인바" },
+  { name: "소마", category: "위스키/칵테일바" },
+  { name: "비샬", category: "와인바" },
+];
+
+// --- State ---
+let spinning = false;
+let currentAngle = 0;
+let history = [];
+const n = RESTAURANTS.length;
+
+document.getElementById("countDisplay").textContent = n;
+
+// --- Ugly bright colors ---
+const COLORS = [
+  "#FF0000","#00FF00","#0000FF","#FFFF00","#FF00FF","#00FFFF",
+  "#FF8800","#88FF00","#0088FF","#FF0088","#8800FF","#00FF88",
+  "#FF4444","#44FF44","#4444FF","#FFAA00","#AA00FF","#00FFAA",
+  "#FF6600","#66FF00","#0066FF","#FF0066","#6600FF","#00FF66",
+  "#CC0000","#00CC00","#0000CC","#CCCC00","#CC00CC","#00CCCC",
+];
+
+function drawWheel() {
+  const canvas = document.getElementById("wheel");
+  const ctx = canvas.getContext("2d");
+  const cx = canvas.width / 2;
+  const cy = canvas.height / 2;
+  const r = cx - 10;
+  const arc = (2 * Math.PI) / n;
+
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+  for (let i = 0; i < n; i++) {
+    const startAngle = currentAngle + i * arc;
+    const endAngle = startAngle + arc;
+
+    // slice
+    ctx.beginPath();
+    ctx.moveTo(cx, cy);
+    ctx.arc(cx, cy, r, startAngle, endAngle);
+    ctx.closePath();
+    ctx.fillStyle = COLORS[i % COLORS.length];
+    ctx.fill();
+
+    // thick black border
+    ctx.strokeStyle = "#000";
+    ctx.lineWidth = 2;
+    ctx.stroke();
+
+    // text
+    ctx.save();
+    ctx.translate(cx, cy);
+    ctx.rotate(startAngle + arc / 2);
+
+    ctx.fillStyle = "#000";
+    ctx.font = "bold 8px 'Comic Sans MS', 'Jua', cursive";
+    ctx.textAlign = "right";
+    ctx.textBaseline = "middle";
+    ctx.strokeStyle = "#fff";
+    ctx.lineWidth = 2;
+
+    const label = RESTAURANTS[i].name.length > 8
+      ? RESTAURANTS[i].name.slice(0, 7) + ".."
+      : RESTAURANTS[i].name;
+
+    ctx.strokeText(label, r - 12, 0);
+    ctx.fillText(label, r - 12, 0);
+    ctx.restore();
+  }
+
+  // outer ring (ugly dashed)
+  ctx.beginPath();
+  ctx.arc(cx, cy, r + 2, 0, 2 * Math.PI);
+  ctx.strokeStyle = "#000";
+  ctx.lineWidth = 4;
+  ctx.setLineDash([8, 4]);
+  ctx.stroke();
+  ctx.setLineDash([]);
+}
+
+function getWinnerIndex() {
+  const arc = (2 * Math.PI) / n;
+  const pointerAngle = (3 * Math.PI / 2 - currentAngle) % (2 * Math.PI);
+  const normalized = ((pointerAngle % (2 * Math.PI)) + 2 * Math.PI) % (2 * Math.PI);
+  return Math.floor(normalized / arc) % n;
+}
+
+function spin() {
+  if (spinning || n === 0) return;
+
+  spinning = true;
+  document.getElementById("spinBtn").disabled = true;
+  document.getElementById("resultBox").classList.remove("active");
+  document.getElementById("statusText").textContent = "룰렛 돌리는 중...";
+
+  const extraRotations = (5 + Math.random() * 5) * 2 * Math.PI;
+  const randomOffset = Math.random() * 2 * Math.PI;
+  const totalSpin = extraRotations + randomOffset;
+  const duration = 4000 + Math.random() * 1500;
+  const startAngle = currentAngle;
+  const startTime = performance.now();
+
+  function easeOut(t) {
+    return 1 - Math.pow(1 - t, 3);
+  }
+
+  function animate(now) {
+    const elapsed = now - startTime;
+    const t = Math.min(elapsed / duration, 1);
+    currentAngle = startAngle + totalSpin * easeOut(t);
+    drawWheel();
+
+    if (t < 1) {
+      requestAnimationFrame(animate);
+    } else {
+      spinning = false;
+      document.getElementById("spinBtn").disabled = false;
+      showResult();
+    }
+  }
+
+  requestAnimationFrame(animate);
+}
+
+function showResult() {
+  const idx = getWinnerIndex();
+  const winner = RESTAURANTS[idx];
+
+  document.getElementById("resultName").textContent = ">>> " + winner.name + " <<<";
+  document.getElementById("resultCategory").textContent = "[ " + winner.category + " ]";
+  document.getElementById("resultBox").classList.add("active");
+  document.getElementById("statusText").textContent = "결과: " + winner.name;
+
+  // ugly alert-style confetti
+  createUglyConfetti();
+
+  history.unshift(winner.name);
+  if (history.length > 6) history.pop();
+  const historyEl = document.getElementById("history");
+  historyEl.innerHTML = history.length > 1
+    ? "이전 결과: " + history.slice(1).map(h => `<span>${h}</span>`).join("")
+    : "";
+}
+
+function createUglyConfetti() {
+  const ugly = ["★","●","■","▲","♥","♦","♣","♠","◆","✦","☆","○"];
+  for (let i = 0; i < 30; i++) {
+    const el = document.createElement("div");
+    const char = ugly[Math.floor(Math.random() * ugly.length)];
+    el.textContent = char;
+    el.style.cssText = `
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      font-size: ${12 + Math.random() * 24}px;
+      color: ${COLORS[Math.floor(Math.random() * COLORS.length)]};
+      pointer-events: none;
+      z-index: 9999;
+      font-weight: bold;
+    `;
+    document.body.appendChild(el);
+
+    const angle = Math.random() * Math.PI * 2;
+    const velocity = 150 + Math.random() * 350;
+    const vx = Math.cos(angle) * velocity;
+    const vy = Math.sin(angle) * velocity - 150;
+
+    el.animate([
+      { transform: "translate(0, 0) rotate(0deg)", opacity: 1 },
+      { transform: `translate(${vx}px, ${vy + 500}px) rotate(${Math.random() * 720}deg)`, opacity: 0 }
+    ], {
+      duration: 1200 + Math.random() * 800,
+      easing: "ease-out"
+    }).onfinish = () => el.remove();
+  }
+}
+
+// --- Keyboard shortcut ---
+document.addEventListener("keydown", (e) => {
+  if (e.code === "Space" || e.code === "Enter") {
+    e.preventDefault();
+    spin();
+  }
+});
+
+// --- Status bar clock ---
+function updateClock() {
+  const now = new Date();
+  document.getElementById("statusTime").textContent =
+    now.toLocaleTimeString("ko-KR", { hour: "2-digit", minute: "2-digit" });
+}
+setInterval(updateClock, 1000);
+updateClock();
+
+// --- Fake visitor counter ---
+const fakeCount = Math.floor(Math.random() * 900000 + 100000);
+document.getElementById("visitorCount").textContent = String(fakeCount).padStart(6, "0");
+
+// --- Init ---
+drawWheel();
+</script>
+</body>
+</html>
